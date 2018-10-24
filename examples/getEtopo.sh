@@ -1,6 +1,7 @@
 #!/bin/bash 
 
-DataFolder="."
+DataFolder=$1
+DataFolder=${DataFolder:-'.'}
 
 mkdir -p $DataFolder
 
