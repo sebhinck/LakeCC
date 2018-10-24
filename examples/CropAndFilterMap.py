@@ -27,14 +27,14 @@ def CropAndFilterMap(fIn, fOut, lim, FilterN = 10, FilterMethod = 'square'):
     
     xV = ncIn.variables['x']
     yV = ncIn.variables['y']
-    usurfV = ncIn.variables['z']
+    topgV = ncIn.variables['z']
     
     xmin, xmax, ymin, ymax = getIndRangeFromCoord(lim[0], lim[1], lim[2], lim[3], xV[:], yV[:])
     xind = range(xmin, xmax + 1)
     yind = range(ymin, ymax + 1)    
     
     
-    usurf = np.copy(usurfV[yind, xind]).astype("double")
+    topg = np.copy(topgV[yind, xind]).astype("double")
    
     ncout = NC.Dataset(fOut, 'w')
     
@@ -47,16 +47,16 @@ def CropAndFilterMap(fIn, fOut, lim, FilterN = 10, FilterMethod = 'square'):
     yN = ncout.createVariable('y', 'f4', 'y')
     ncout.variables['y'][:] = yV[yind]
     
-    usurfN = ncout.createVariable('usurf' , 'f4', ['y', 'x'])
-    ncout.variables['usurf'][:] = usurf
+    topgN = ncout.createVariable('topg' , 'f4', ['y', 'x'])
+    ncout.variables['topg'][:] = topg
     
     if not (FilterMethod is None):
         if (FilterMethod == 'Gaussian'):
             import scipy.ndimage as ndi
-            filtered = ndi.gaussian_filter(usurf, sigma = FilterN,  mode = 'nearest')
+            filtered = ndi.gaussian_filter(topg, sigma = FilterN,  mode = 'nearest')
             
-            usurfFilteredV = ncout.createVariable("usurf_filtered", 'f4', ['y', 'x'])
-            ncout.variables['usurf_filtered'][:] = filtered
+            topgFilteredV = ncout.createVariable("topg_filtered", 'f4', ['y', 'x'])
+            ncout.variables['topg_filtered'][:] = filtered
     
     ncout.close()
     
