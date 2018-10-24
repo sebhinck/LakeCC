@@ -22,7 +22,7 @@ cdef class LakeModelCC:
     cdef double drho
     
     cdef LakeModel_ConnectedComponents.LakeLevelCC* c_LakeModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] pism_mask, rho_i, rho_w):
+    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] pism_mask, rho_i, rho_w, setMarginSink=True):
         
         self.pism_mask_free_rock     = 0
         self.pism_mask_grounded      = 2
@@ -52,6 +52,12 @@ cdef class LakeModelCC:
         else:
             self.mask_run = cvarray(shape=(n_rows, n_cols), itemsize = sizeof(double_t), format="d")
             self.mask_run[:,:] = 0
+            
+        if setMarginSink:
+            self.mask_run[ 0,  :] = 1
+            self.mask_run[-1,  :] = 1
+            self.mask_run[: ,  0] = 1
+            self.mask_run[: , -1] = 1
                     
         self.drho = rho_i/rho_w
         

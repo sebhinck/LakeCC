@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho_sea=1027., rho_fresh=1000., tind=-1, thk_if=10.):
+def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho_sea=1027., rho_fresh=1000., tind=-1, thk_if=10., setMarginSink=True):
   from netCDF4 import Dataset
   import LakeCC as LCC
   
@@ -50,7 +50,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
     pism_mask = computePismMask(topg, thk, sea_level, alpha, shape, thk_if).astype("double")
     
   #pism_mask is present
-  LM = LCC.LakeModelCC(topg, thk, pism_mask, rho_ice, rho_fresh)
+  LM = LCC.LakeModelCC(topg, thk, pism_mask, rho_ice, rho_fresh, setMarginSink)
   LM.fillLakes(dz, zMin, zMax)
   lake_level = LM.getFloatationLevel()
           
@@ -135,7 +135,7 @@ def getNcVarSlice(nc, varname, tind = -1, shape = None):
 def main():
   options = parse_args()
 
-  FillLakes(options.fIn, options.fOut, options.sl, options.dz, options.zMin, options.zMax, options.rhoi, options.rhos, options.rhof, options.tind, options.thk_if)
+  FillLakes(options.fIn, options.fOut, options.sl, options.dz, options.zMin, options.zMax, options.rhoi, options.rhos, options.rhof, options.tind, options.thk_if, options.ms)
 
 def parse_args():
   from argparse import ArgumentParser
@@ -154,6 +154,10 @@ def parse_args():
   parser.add_argument('-rho_f', "--fresh_water_density", dest="rhof", help="Density of fresh water", default=1000., type=float)
   parser.add_argument('-thk_if', "--icefree_thickness", dest="thk_if", help="Icefree thickness", default=10., type=float)
   parser.add_argument('-tind', "--time-index", dest="tind", help="index of time dimension", default=-1, type=int)
+  parser.add_argument('-ms','--setMarginSink', dest='ms', action='store_true', help="set margin of domain as sink")
+  parser.add_argument('-nms','--not-setMarginSink', dest='ms', action='store_false', help="not set margin of domain as sink")
+  parser.set_defaults(ms=True)
+
   options = parser.parse_args()
   return options
 
