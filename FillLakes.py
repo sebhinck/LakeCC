@@ -109,33 +109,45 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   ncIn.close()
   
   ncOut = Dataset(fOut, 'w')
+  
+  missing_value = -2.e+09
  
   xDim = ncOut.createDimension('x', len(x))
   yDim = ncOut.createDimension('y', len(y))
 
   x_out = ncOut.createVariable('x','f4', ['x'])
+  x_out.units = "m"
   y_out = ncOut.createVariable('y','f4', ['y'])
-  
+  y_out.units = "m"
+
   x_out[:] = x[:]
   y_out[:] = y[:]
  
   topg_out = ncOut.createVariable('topg','f4', ['y','x'])
   topg_out[:] = topg[:,:]
+  topg_out.units = "m"
   
   thk_out = ncOut.createVariable('thk','f4', ['y','x'])
   thk_out[:] = thk[:,:]
+  thk_out.units = "m"
   
-  pism_mask_out = ncOut.createVariable('pism_mask','f4', ['y','x'])
+  pism_mask_out = ncOut.createVariable('pism_mask','i', ['y','x'])
   pism_mask_out[:] = pism_mask[:,:]
   
-  sea_level_out = ncOut.createVariable('sea_level','f4', ['y','x'])
-  sea_level_out[:] = sea_level[:,:]
+  sea_level_out = ncOut.createVariable('sea_level','f4', ['y','x'], fill_value=missing_value)
+  sea_level_tmp = sea_level.copy()
+  sea_level_tmp[np.isnan(sea_level)] = missing_value
+  sea_level_out[:] = sea_level_tmp[:,:]
+  sea_level_out.units = "m"
 
-  sl_mask_out = ncOut.createVariable('sl_mask','f4', ['y','x'])
+  sl_mask_out = ncOut.createVariable('sl_mask','i', ['y','x'])
   sl_mask_out[:] = sl_mask[:,:]
   
-  lake_level_out = ncOut.createVariable('lake_level','f4', ['y','x'])
-  lake_level_out[:] = lake_level[:,:]
+  lake_level_out = ncOut.createVariable('lake_level','f4', ['y','x'], fill_value=missing_value)
+  lake_level_tmp = lake_level.copy()
+  lake_level_tmp[np.isnan(lake_level)] = missing_value
+  lake_level_out[:] = lake_level_tmp[:,:]
+  lake_level_out.units = "m"
   
   ncOut.close()
 
