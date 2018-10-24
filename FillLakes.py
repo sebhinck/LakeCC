@@ -37,12 +37,11 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
         sl_mask = getNcVarSlice(ncIn, 'sl_mask', tind, shape).astype("double")
       except:
         print (" -> Set sl_mask 1 at the margins.")
-        sl_mask = np.zeros(shape)
+        sl_mask = np.zeros(shape).astype("double")
         sl_mask[(0, -1),:] = 1
         sl_mask[:,(0, -1)] = 1
       #sl_mask defined
-      #FIXME SL Mask not need here... 
-      SLM = LCC.SeaLevelModelCC(topg, thk, rho_ice, rho_sea)
+      SLM = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea)
       SLM.fill2SeaLevel(sl)
       sea_level = SLM.getFloatationLevel()
       

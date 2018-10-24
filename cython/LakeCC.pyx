@@ -3,7 +3,6 @@ cimport numpy as np
 import numpy
 from cython.view cimport array as cvarray
 cimport LakeModel_ConnectedComponents
-#cimport SeaLevelModel_ConnectedComponents
 
 ctypedef np.float64_t double_t
 ctypedef np.int64_t int_t
@@ -92,10 +91,11 @@ cdef class SeaLevelModelCC:
     cdef double_t[:,:] topg
     cdef double_t[:,:] thk
     cdef double_t[:,:] floatation_level
+    cdef double_t[:,:] mask_run
     cdef double drho
     
     cdef LakeModel_ConnectedComponents.SeaLevelCC* c_SeaLevelModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, rho_i, rho_w):
+    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] mask_run, rho_i, rho_w):
       
         cdef unsigned int n_rows, n_cols
         n_rows = topg.shape[0]
@@ -103,12 +103,13 @@ cdef class SeaLevelModelCC:
         
         self.topg = topg.copy()
         self.thk = thk.copy()
-        self.floatation_level = thk.copy()#cvarray(shape=(n_rows, n_cols), itemsize = sizeof(double_t), format="d")
+        self.mask_run = mask_run.copy()
+        self.floatation_level = thk.copy()
         self.floatation_level[:,:] = <double_t>numpy.nan
 
         self.drho = rho_i/rho_w
         
-        self.c_SeaLevelModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], self.drho)
+        self.c_SeaLevelModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho)
         
     def __dealloc__(self):
         del self.c_SeaLevelModelCC

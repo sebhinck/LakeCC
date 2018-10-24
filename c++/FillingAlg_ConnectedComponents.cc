@@ -69,9 +69,7 @@ void FillingAlgCC::fill2Level(double Level) {
 }
 
 bool FillingAlgCC::SinkCond(unsigned int r, unsigned int c) {
-  return ((m_mask_run[r * m_nCols + c] == 1) or 
-          (c == 0) or (c == (m_nCols - 1)) or 
-          (r == 0) or (r == (m_nRows - 1)));
+  return (m_mask_run[r * m_nCols + c] == 1);
 }
 
 bool FillingAlgCC::ForegroundCond(unsigned int r, unsigned int c, double Level) {
@@ -118,7 +116,7 @@ void FillingAlgCC::run_union(std::vector<unsigned int> &parents, unsigned int ru
   }
 
 }
-    
+
 void FillingAlgCC::setRunSink(std::vector<unsigned int> &parents, unsigned int run) {
   while(parents[run] > 1) {
     run = parents[run];

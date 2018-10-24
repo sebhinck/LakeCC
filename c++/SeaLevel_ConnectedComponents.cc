@@ -8,17 +8,14 @@ SeaLevelCC::SeaLevelCC(unsigned int n_rows,
                        double* topo, 
                        double* thk, 
                        double* floatation_level, 
+                       double* mask_run, 
                        double drho)
-  : FillingAlgCC(n_rows, n_cols, topo, thk, floatation_level, NULL, drho) {
-  //Init empty mask
-  m_mask_run = new double[m_nRows * m_nCols];
-  for (unsigned int i = 0; i < (m_nRows * m_nCols); i++) {
-    m_mask_run[i] = 0;
-  }
+  : FillingAlgCC(n_rows, n_cols, topo, thk, floatation_level, mask_run, drho) {
+  //empty
 }
 
 SeaLevelCC::~SeaLevelCC() {
-  delete [] m_mask_run;
+  //empty
 }
 
 void SeaLevelCC::fill2SeaLevel(double SeaLevel) {
@@ -26,13 +23,7 @@ void SeaLevelCC::fill2SeaLevel(double SeaLevel) {
 }
 
 bool SeaLevelCC::SinkCond(unsigned int r, unsigned int c) {
-  return ((m_mask_run[r * m_nCols + c] == 1) or 
-          (c == 0) or (c == (m_nCols - 1)) or 
-          (r == 0) or (r == (m_nRows - 1)));
-}
-
-bool SeaLevelCC::ForegroundCond(unsigned int r, unsigned int c, double Level) {
-  return ((m_topo[r * m_nCols + c] + (m_drho * m_thk[r * m_nCols + c])) < Level);
+  return (m_mask_run[r * m_nCols + c] == 1);
 }
 
 void SeaLevelCC::labelMap(double Level, 

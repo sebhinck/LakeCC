@@ -12,13 +12,13 @@ public:
              double* topo, 
              double* thk, 
              double* floatation_level, 
+             double* mask_run,
              double  drho);
   ~SeaLevelCC();
   void fill2SeaLevel(double SeaLevel);
 
 private:
   virtual bool SinkCond(unsigned int r, unsigned int c);
-  virtual bool ForegroundCond(unsigned int r, unsigned int c, double Level);
   virtual void labelMap(double Level, 
                         unsigned int run_number, 
                         std::vector<unsigned int> &rows, 

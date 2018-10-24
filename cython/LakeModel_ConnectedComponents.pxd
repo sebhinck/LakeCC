@@ -8,5 +8,5 @@ cdef extern from "LakeLevel_ConnectedComponents.hh":
         
 cdef extern from "SeaLevel_ConnectedComponents.hh":
     cdef cppclass SeaLevelCC:
-        SeaLevelCC(unsigned int n_rows, unsigned int n_cols, double *usurf, double *thk, double *floatation_level, double d_rho) except +
+        SeaLevelCC(unsigned int n_rows, unsigned int n_cols, double *usurf, double *thk, double *floatation_level, double *mask_run, double d_rho) except +
         void fill2SeaLevel(double SeaLevel)
