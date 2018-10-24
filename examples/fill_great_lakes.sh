@@ -12,6 +12,7 @@ GreatLakesFile="${thisdir}/GreatLakes.nc"
 ${thisdir}/getEtopo.sh ${thisdir}
 
 #Crop GreatLakes [-93, -73, 40, 49]
-${thisdir}/CropAndFilterMap.py ${EtopoFile} ${GreatLakesFile} -93 -73 40 49
+${thisdir}/CropAndFilterMap.py ${EtopoFile} ${GreatLakesFile} -93 -73 40 49 'Gaussian' 2
 
-
+#Use the Python interface to fill the map
+${libdir}/FillLakes.py --sea-level 123 -i ${GreatLakesFile} -o test.nc -dz 1 -zMin -100 -zMax 800

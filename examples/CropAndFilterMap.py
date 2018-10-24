@@ -48,15 +48,16 @@ def CropAndFilterMap(fIn, fOut, lim, FilterN = 10, FilterMethod = 'square'):
     ncout.variables['y'][:] = yV[yind]
     
     topgN = ncout.createVariable('topg' , 'f4', ['y', 'x'])
-    ncout.variables['topg'][:] = topg
     
     if not (FilterMethod is None):
         if (FilterMethod == 'Gaussian'):
             import scipy.ndimage as ndi
             filtered = ndi.gaussian_filter(topg, sigma = FilterN,  mode = 'nearest')
-            
-            topgFilteredV = ncout.createVariable("topg_filtered", 'f4', ['y', 'x'])
-            ncout.variables['topg_filtered'][:] = filtered
+            topg = filtered
+            #topgFilteredV = ncout.createVariable("topg_filtered", 'f4', ['y', 'x'])
+            #ncout.variables['topg_filtered'][:] = filtered
+
+    ncout.variables['topg'][:] = topg
     
     ncout.close()
     
@@ -95,7 +96,7 @@ def main(argv):
     FilterN = int(sys.argv[8])
   else:
     FilterN = 1
-    
+
   CropAndFilterMap(fIn, fOut, lim, FilterN, Filter)
 
 
