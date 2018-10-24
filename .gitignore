@@ -1,0 +1,6 @@
+examples/CropAndFilterMap.pyc
+*.grd
+*.nc
+*.grd.gz
+build/
+*.so
