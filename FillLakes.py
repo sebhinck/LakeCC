@@ -1,5 +1,42 @@
 #!/usr/bin/env python
 
+#####################################################################
+## Usage of this script #############################################
+#####################################################################
+#
+#Fill lakes
+#
+#optional arguments:
+#  -h, --help            show this help message and exit
+#  -i FILE, --input FILE
+#                        Input file
+#  -o FILE, --output FILE
+#                        Output file
+#  -sl SL, --sea-level SL
+#                        scalar sea-level
+#  -dz DZ, --lake_level_spacing DZ
+#                        Lake level spacing
+#  -zMin ZMIN, --lake_level_min ZMIN
+#                        Lowest lake level
+#  -zMax ZMAX, --lake_level_max ZMAX
+#                        Highest lake level
+#  -rho_i RHOI, --ice_density RHOI
+#                        Density of ice
+#  -rho_s RHOS, --sea_water_density RHOS
+#                        Density of sea water
+#  -rho_f RHOF, --fresh_water_density RHOF
+#                        Density of fresh water
+#  -thk_if THK_IF, --icefree_thickness THK_IF
+#                        Icefree thickness
+#  -tind TIND, --time-index TIND
+#                        index of time dimension
+#  -ms, --setMarginSink  set margin of domain as sink
+#  -nms, --not-setMarginSink
+#                        not set margin of domain as sink
+#####################################################################
+
+
+
 def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho_sea=1027., rho_fresh=1000., tind=-1, thk_if=10., setMarginSink=True):
   from netCDF4 import Dataset
   import LakeCC as LCC
