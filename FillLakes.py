@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import, division, print_function
+
 #####################################################################
 ## Usage of this script #############################################
 #####################################################################
@@ -78,18 +80,31 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
         sl_mask[(0, -1),:] = 1
         sl_mask[:,(0, -1)] = 1
       #sl_mask defined
+      t_sl = myTimer('Sea level calculation')
       SLM = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea)
       SLM.fill2SeaLevel(sl)
       sea_level = SLM.getFloatationLevel()
-      
+      t_sl.toc()
+
     #Sea Level is present
     alpha = 1. - (rho_ice / rho_sea)
     pism_mask = computePismMask(topg, thk, sea_level, alpha, shape, thk_if).astype("double")
     
   #pism_mask is present
+  t_ll = myTimer('Lake level caluculation')
   LM = LCC.LakeModelCC(topg, thk, pism_mask, rho_ice, rho_fresh, setMarginSink)
   LM.fillLakes(dz, zMin, zMax)
   lake_level = LM.getFloatationLevel()
+  t_ll.toc()
+
+
+  zMin_tmp = zMin
+  if zMin_tmp is None:
+    zMin_tmp = np.min(topg)  
+  zMax_tmp = zMax
+  if zMax_tmp is None:
+    zMax_tmp = np.max(topg)
+  print("Size of map: "+str(shape[0])+"x"+str(shape[1])+", number of levels checked: "+str(int( (zMax_tmp - zMin_tmp)/dz )))
           
   ncIn.close()
   
@@ -205,6 +220,58 @@ def is_valid_file(parser, arg):
     parser.error("The file %s does not exist!" % arg)
   else:
     return os.path.abspath(arg)  # return file path
+
+
+
+import os, time
+from datetime import timedelta
+
+try:
+    time.monotonic
+except:
+    time.monotonic = time.time
+
+class myTimer():
+    def __init__(self, Name = None, start=True):
+        self.Name = Name
+        self.running = False
+        if start:
+            self.tic()
+            
+    def tic(self):
+        #if self.Name is not None:
+        #    print(self.Name ,"started at:", time.strftime('%X', time.localtime()))
+            
+        self.running = True            
+        self.StartTime = time.monotonic()
+        
+    def toc(self):
+        if self.running:
+            self.EndTime = time.monotonic()
+            self.running = False
+            dt = timedelta(seconds = self.EndTime - self.StartTime)
+            #if self.Name is not None:
+            #    print(self.Name ,"ended at:", time.strftime('%X', time.localtime()))
+        else:
+            dt = None
+            
+        self.reportEnd(dt)
+        
+    def report(self, dt, verb='running for'):
+        if self.Name is not None:
+            print(self.Name ,verb, dt)
+        else:
+            print(dt)
+            
+    def reportEnd(self, dt):
+        self.report(dt, 'took')
+        
+    def elapsed(self):
+        now = time.monotonic()
+        dt = timedelta(seconds = now - self.StartTime)
+        self.report(dt)
+
+
 
 if __name__ == "__main__":
   import numpy as np
