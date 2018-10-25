@@ -10,15 +10,11 @@ FillingAlgCC::FillingAlgCC(unsigned int n_rows,
                            double *floatation_level, 
                            double *mask_run, 
                            double drho,
-                           double ice_free_thickness) {
-  m_nRows = n_rows;
-  m_nCols = n_cols;
-  m_topo = topo;
-  m_thk = thk;
-  m_floatation_level = floatation_level;
-  m_mask_run = mask_run;
-  m_drho = drho;
-  m_ice_free_thickness = ice_free_thickness;
+                           double ice_free_thickness)
+  : m_nRows(n_rows), m_nCols(n_cols), m_topo(topo), m_thk(thk), 
+    m_floatation_level(floatation_level), m_mask_run(mask_run), 
+    m_drho(drho), m_ice_free_thickness(ice_free_thickness) {
+  //empty
 }
 
 FillingAlgCC::~FillingAlgCC() {
