@@ -20,9 +20,10 @@ cdef class LakeModelCC:
     cdef int pism_mask_free_ocean
     cdef int pism_mask_lake
     cdef double drho
+    cdef double ice_free_thickness
     
     cdef LakeModel_ConnectedComponents.LakeLevelCC* c_LakeModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] ocean_mask, rho_i, rho_w, setMarginSink=True):
+    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] ocean_mask, rho_i, rho_w, ice_free_thickness = 10, setMarginSink=True):
         
         cdef unsigned int n_rows, n_cols
         n_rows = topg.shape[0]
@@ -47,8 +48,9 @@ cdef class LakeModelCC:
             self.mask_run[: , -1] = 1
                     
         self.drho = rho_i/rho_w
+        self.ice_free_thickness = ice_free_thickness
         
-        self.c_LakeModelCC = new LakeModel_ConnectedComponents.LakeLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho)
+        self.c_LakeModelCC = new LakeModel_ConnectedComponents.LakeLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho, self.ice_free_thickness)
         
     def __dealloc__(self):
         del self.c_LakeModelCC
@@ -86,9 +88,10 @@ cdef class SeaLevelModelCC:
     cdef double_t[:,:] floatation_level
     cdef double_t[:,:] mask_run
     cdef double drho
+    cdef double ice_free_thickness
     
     cdef LakeModel_ConnectedComponents.SeaLevelCC* c_SeaLevelModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] mask_run, rho_i, rho_w):
+    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] mask_run, rho_i, rho_w, ice_free_thickness = 10):
       
         cdef unsigned int n_rows, n_cols
         n_rows = topg.shape[0]
@@ -101,8 +104,9 @@ cdef class SeaLevelModelCC:
         self.floatation_level[:,:] = <double_t>numpy.nan
 
         self.drho = rho_i/rho_w
+        self.ice_free_thickness = ice_free_thickness
         
-        self.c_SeaLevelModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho)
+        self.c_SeaLevelModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho, self.ice_free_thickness)
         
     def __dealloc__(self):
         del self.c_SeaLevelModelCC

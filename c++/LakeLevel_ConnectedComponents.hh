@@ -13,7 +13,8 @@ public:
               double* thk, 
               double* floatation_level, 
               double* run_mask, 
-              double  drho);
+              double  drho,
+              double  ice_free_thickness);
   ~LakeLevelCC();
   void floodMap(double zMin, double zMax, double dz);
 };

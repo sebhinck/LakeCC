@@ -13,7 +13,8 @@ public:
              double* thk, 
              double* floatation_level, 
              double* mask_run,
-             double  drho);
+             double  drho,
+             double  ice_free_thickness);
   ~SeaLevelCC();
   void fill2SeaLevel(double SeaLevel);
 

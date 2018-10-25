@@ -81,7 +81,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
         sl_mask[:,(0, -1)] = 1
       #sl_mask defined
       t_sl = myTimer('Sea level calculation')
-      SLM = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea)
+      SLM = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea, thk_if)
       SLM.fill2SeaLevel(sl)
       sea_level = SLM.getFloatationLevel()
       t_sl.toc()
@@ -92,7 +92,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
     
   #pism_mask is present
   t_ll = myTimer('Lake level caluculation')
-  LM = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, setMarginSink)
+  LM = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, thk_if, setMarginSink)
   LM.fillLakes(dz, zMin, zMax)
   lake_level = LM.getFloatationLevel()
   t_ll.toc()

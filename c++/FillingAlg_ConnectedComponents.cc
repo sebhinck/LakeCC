@@ -9,7 +9,8 @@ FillingAlgCC::FillingAlgCC(unsigned int n_rows,
                            double *thk , 
                            double *floatation_level, 
                            double *mask_run, 
-                           double drho) {
+                           double drho,
+                           double ice_free_thickness) {
   m_nRows = n_rows;
   m_nCols = n_cols;
   m_topo = topo;
@@ -17,6 +18,7 @@ FillingAlgCC::FillingAlgCC(unsigned int n_rows,
   m_floatation_level = floatation_level;
   m_mask_run = mask_run;
   m_drho = drho;
+  m_ice_free_thickness = ice_free_thickness;
 }
 
 FillingAlgCC::~FillingAlgCC() {
@@ -45,7 +47,7 @@ void FillingAlgCC::fill2Level(double Level) {
       if (ForegroundCond(r, c, Level)) {
         checkForegroundPixel(c, r, SinkCond(r, c), run_number, rows, columns, parents, lengths, isIceFree);
 
-        if (m_thk[r * m_nCols + c] <= 0) {
+        if (m_thk[r * m_nCols + c] <= m_ice_free_thickness) {
           isIceFree[run_number] = true;
         }
 

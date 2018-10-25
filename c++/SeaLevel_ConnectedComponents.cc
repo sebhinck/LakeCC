@@ -9,8 +9,9 @@ SeaLevelCC::SeaLevelCC(unsigned int n_rows,
                        double* thk, 
                        double* floatation_level, 
                        double* mask_run, 
-                       double drho)
-  : FillingAlgCC(n_rows, n_cols, topo, thk, floatation_level, mask_run, drho) {
+                       double drho,
+                       double ice_free_thickness)
+  : FillingAlgCC(n_rows, n_cols, topo, thk, floatation_level, mask_run, drho, ice_free_thickness) {
   //empty
 }
 

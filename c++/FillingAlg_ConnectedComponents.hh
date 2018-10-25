@@ -11,14 +11,15 @@ public:
                double* thk, 
                double* floatation_level, 
                double* run_mask, 
-               double drho);
+               double drho,
+               double ice_free_thickness);
   virtual ~FillingAlgCC();
   void fill2Level(double Level);
 
 protected:
   unsigned int m_nRows, m_nCols;
   double *m_topo, *m_thk, *m_floatation_level;
-  double m_drho;
+  double m_drho, m_ice_free_thickness;
   double *m_mask_run;
   void run_union(std::vector<unsigned int> &parents, 
                  unsigned int run1, 
