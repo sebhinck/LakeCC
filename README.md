@@ -1,7 +1,7 @@
 # LakeCC
 Standalone Python module to identify lake basins
 
-[[https://github.com/sebhinck/LakeCC/edit/master/examples/GreatLakes.png|alt=GreatLakes]]
+![figure](https://github.com/sebhinck/LakeCC/blob/master/examples/GreatLakes.png)
 
 ## Building
 Run `make all` in base directory.
