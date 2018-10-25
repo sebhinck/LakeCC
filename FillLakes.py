@@ -65,7 +65,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
     thk = np.zeros(shape).astype("double")
 
   try:
-    pism_mask = getNcVarSlice(ncIn, 'pism_mask', tind, shape).astype("double")
+    ocean_mask = getNcVarSlice(ncIn, 'ocean_mask', tind, shape).astype("double")
   except:
     print (" -> Calculate it from topg, thk and sea_level.")
     try:
@@ -88,11 +88,11 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
 
     #Sea Level is present
     alpha = 1. - (rho_ice / rho_sea)
-    pism_mask = computePismMask(topg, thk, sea_level, alpha, shape, thk_if).astype("double")
+    ocean_mask = computeOceanMask(topg, thk, sea_level, alpha, shape).astype("double")
     
   #pism_mask is present
   t_ll = myTimer('Lake level caluculation')
-  LM = LCC.LakeModelCC(topg, thk, pism_mask, rho_ice, rho_fresh, setMarginSink)
+  LM = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, setMarginSink)
   LM.fillLakes(dz, zMin, zMax)
   lake_level = LM.getFloatationLevel()
   t_ll.toc()
@@ -131,8 +131,8 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   thk_out[:] = thk[:,:]
   thk_out.units = "m"
   
-  pism_mask_out = ncOut.createVariable('pism_mask','i', ['y','x'])
-  pism_mask_out[:] = pism_mask[:,:]
+  ocean_mask_out = ncOut.createVariable('ocean_mask','i', ['y','x'])
+  ocean_mask_out[:] = ocean_mask[:,:]
   
   sea_level_out = ncOut.createVariable('sea_level','f4', ['y','x'], fill_value=missing_value)
   sea_level_tmp = sea_level.copy()
@@ -152,12 +152,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   ncOut.close()
 
 
-def computePismMask(topg, thk, sea_level, alpha, shape, ice_free_thickness=10.):
-
-  pism_mask_free_rock     = 0
-  pism_mask_grounded      = 2
-  pism_mask_floating      = 3
-  pism_mask_free_ocean    = 4
+def computeOceanMask(topg, thk, sea_level, alpha, shape):
 
   hgr = topg + thk
   sl = sea_level.copy()
@@ -166,12 +161,9 @@ def computePismMask(topg, thk, sea_level, alpha, shape, ice_free_thickness=10.):
   hfl = sl + alpha * thk
 
   is_floating = hfl > hgr
-  ice_free    = (thk < ice_free_thickness);
 
-  mask = np.ones(shape) * pism_mask_free_rock
-  mask[~ice_free & ~is_floating] = pism_mask_grounded
-  mask[~ice_free & is_floating]  = pism_mask_floating
-  mask[ice_free & is_floating]   = pism_mask_free_ocean
+  mask = np.zeros(shape)
+  mask[is_floating]  = 1
 
   return mask
 

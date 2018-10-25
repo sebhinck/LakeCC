@@ -22,36 +22,23 @@ cdef class LakeModelCC:
     cdef double drho
     
     cdef LakeModel_ConnectedComponents.LakeLevelCC* c_LakeModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] pism_mask, rho_i, rho_w, setMarginSink=True):
-        
-        self.pism_mask_free_rock     = 0
-        self.pism_mask_grounded      = 2
-        self.pism_mask_floating      = 3
-        self.pism_mask_free_ocean    = 4
-        self.pism_mask_lake          = 5
-        
+    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] ocean_mask, rho_i, rho_w, setMarginSink=True):
         
         cdef unsigned int n_rows, n_cols
         n_rows = topg.shape[0]
         n_cols = topg.shape[1]
-        
+
         self.topg = topg.copy()
         self.topgMax = topg.max()
         self.topgMin = topg.min()
         self.thk = thk.copy()
         self.floatation_level = cvarray(shape=(n_rows, n_cols), itemsize = sizeof(double_t), format="d")
         self.floatation_level[:,:] = <double_t>numpy.nan
-        
-        mask_run = numpy.zeros_like(topg)
 
-        if pism_mask is not None:
-            mask_run = numpy.zeros_like(topg)
-            mask_run[(pism_mask == self.pism_mask_free_ocean)] = 1
-            mask_run[(pism_mask == self.pism_mask_floating)] = 1
-            self.mask_run = mask_run.copy()
+        if ocean_mask is not None:
+            self.mask_run = ocean_mask.copy()
         else:
-            self.mask_run = cvarray(shape=(n_rows, n_cols), itemsize = sizeof(double_t), format="d")
-            self.mask_run[:,:] = 0
+            self.mask_run = numpy.zeros_like(topg)
             
         if setMarginSink:
             self.mask_run[ 0,  :] = 1
