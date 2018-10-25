@@ -77,7 +77,8 @@ optional arguments:
   -nms, --not-setMarginSink
                         not set margin of domain as sink
 ```
-Most options are pretty self-explaning. By default this tool would take the domain's margin as a sink (i.e. a lake connected to the margin overflows), this can be disables by setting `--net-setMarginSink`.
+Most options are pretty self-explaning.  
+By default this tool would take the domain's margin as a sink (i.e. a lake connected to the margin overflows), this can be disables by setting `--not-setMarginSink`.
 
 It is important to mention that the variable names of the input files are important. Here is a list of all recognized fields:
 * `topg` - *needed* - topography of bedrock
