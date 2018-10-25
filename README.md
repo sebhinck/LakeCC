@@ -18,14 +18,14 @@ In the following the python interface, the wrapper and an example are shortly de
 
 ## Python Interface
 ### SeaLevelModelCC
-For initialization this model needs some input:
+This model needs some input:
 * topography - spatial map of bedrock
 * ice_thickness - spatial map of ice thickness
 * sl_mask - a map that is 1 at cells that are known to be ocean, and zero otherwise. A mask that is only 1 at the margin would for example result in ocean basins that need to be connected to the margin of the domain, whereas cells below the sea-level that are cut off the ocean are not added to the ocean extent.
 * rho_ice and rho_sea - density of ice and sea water, respectively
 * ice_free_thickness - ice thickness threshold, below which a cell is considered as ice free
+* scalar sea-level
 
-By calling `fill2SeaLevel` the spatial map of the sea-level is computed internally. This function takes the scalar sea-level as input. The result can be retrieved by calling `getFloatationLevel`.
 
 ### LakeModelCC
 For initialization this model needs some input:
@@ -34,12 +34,9 @@ For initialization this model needs some input:
 * ocean_mask - a map that is 1 at ocean cells and zero otherwise. This map can easily be computed from the output of SeaLevelModelCC
 * rho_ice and rho_fresh - density of ice and fresh water, respectively
 * ice_free_thickness - ice thickness threshold, below which a cell is considered as ice free
-
-By calling `fillLakes` the basins of the topography are filled until the overflow into the ocean. This function takes three inputs:
 * dz - step size between successive lake levels to be checked
 * zMin - lowest lake level
 * zMax - highest lake level
-The resulting lake levels can then be retrieved by calling `getFloatationLevel`.
 
 
 ## FillLakes.py - Wrapper
