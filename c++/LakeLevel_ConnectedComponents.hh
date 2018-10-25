@@ -7,12 +7,12 @@
 
 class LakeLevelCC : public FillingAlgCC {
 public:
-  LakeLevelCC(unsigned int n_rows, 
-              unsigned int n_cols, 
-              double* topo, 
-              double* thk, 
-              double* floatation_level, 
-              double* run_mask, 
+  LakeLevelCC(unsigned int n_rows,
+              unsigned int n_cols,
+              double* topo,
+              double* thk,
+              double* floatation_level,
+              double* run_mask,
               double  drho,
               double  ice_free_thickness);
   ~LakeLevelCC();

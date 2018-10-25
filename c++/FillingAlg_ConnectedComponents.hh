@@ -5,12 +5,12 @@
 
 class FillingAlgCC {
 public:
-  FillingAlgCC(unsigned int n_rows, 
-               unsigned int n_cols, 
-               double* topo, 
-               double* thk, 
-               double* floatation_level, 
-               double* run_mask, 
+  FillingAlgCC(unsigned int n_rows,
+               unsigned int n_cols,
+               double* topo,
+               double* thk,
+               double* floatation_level,
+               double* run_mask,
                double drho,
                double ice_free_thickness);
   virtual ~FillingAlgCC();
@@ -21,33 +21,33 @@ protected:
   double *m_topo, *m_thk, *m_floatation_level;
   double m_drho, m_ice_free_thickness;
   double *m_mask_run;
-  void run_union(std::vector<unsigned int> &parents, 
-                 unsigned int run1, 
+  void run_union(std::vector<unsigned int> &parents,
+                 unsigned int run1,
                  unsigned int run2);
   void setRunSink(std::vector<unsigned int> &parents,
                   unsigned int run);
-  void checkForegroundPixel(unsigned int c, unsigned int r, 
-                            bool isSink, unsigned int &run_number, 
-                            std::vector<unsigned int> &rows, 
-                            std::vector<unsigned int> &columns, 
-                            std::vector<unsigned int> &parents, 
-                            std::vector<unsigned int> &lengths, 
+  void checkForegroundPixel(unsigned int c, unsigned int r,
+                            bool isSink, unsigned int &run_number,
+                            std::vector<unsigned int> &rows,
+                            std::vector<unsigned int> &columns,
+                            std::vector<unsigned int> &parents,
+                            std::vector<unsigned int> &lengths,
                             std::vector<bool> &isIceFree);
-  virtual void labelRuns(unsigned int run_number, 
-                         std::vector<unsigned int> &parents, 
-                         std::vector<bool> &isIceFree, 
+  virtual void labelRuns(unsigned int run_number,
+                         std::vector<unsigned int> &parents,
+                         std::vector<bool> &isIceFree,
                          std::vector<bool> &isOpen);
-  virtual bool SinkCond(unsigned int r, 
+  virtual bool SinkCond(unsigned int r,
                         unsigned int c);
-  virtual bool ForegroundCond(unsigned int r, 
-                              unsigned int c, 
+  virtual bool ForegroundCond(unsigned int r,
+                              unsigned int c,
                               double Level);
-  virtual void labelMap(double Level, 
-                        unsigned int run_number, 
-                        std::vector<unsigned int> &rows, 
-                        std::vector<unsigned int> &columns, 
-                        std::vector<unsigned int> &parents, 
-                        std::vector<unsigned int> &lengths, 
+  virtual void labelMap(double Level,
+                        unsigned int run_number,
+                        std::vector<unsigned int> &rows,
+                        std::vector<unsigned int> &columns,
+                        std::vector<unsigned int> &parents,
+                        std::vector<unsigned int> &lengths,
                         std::vector<bool> &isOpen);
 };
 

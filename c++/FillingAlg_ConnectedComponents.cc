@@ -3,16 +3,16 @@
 #include <cmath>
 
 
-FillingAlgCC::FillingAlgCC(unsigned int n_rows, 
-                           unsigned int n_cols, 
-                           double *topo, 
-                           double *thk , 
-                           double *floatation_level, 
-                           double *mask_run, 
+FillingAlgCC::FillingAlgCC(unsigned int n_rows,
+                           unsigned int n_cols,
+                           double *topo,
+                           double *thk ,
+                           double *floatation_level,
+                           double *mask_run,
                            double drho,
                            double ice_free_thickness)
-  : m_nRows(n_rows), m_nCols(n_cols), m_topo(topo), m_thk(thk), 
-    m_floatation_level(floatation_level), m_mask_run(mask_run), 
+  : m_nRows(n_rows), m_nCols(n_cols), m_topo(topo), m_thk(thk),
+    m_floatation_level(floatation_level), m_mask_run(mask_run),
     m_drho(drho), m_ice_free_thickness(ice_free_thickness) {
   //empty
 }
@@ -24,10 +24,10 @@ FillingAlgCC::~FillingAlgCC() {
 
 void FillingAlgCC::fill2Level(double Level) {
   unsigned int max_items = 2 * m_nRows;
-  
+
   std::vector<unsigned int> parents(max_items), lengths(max_items), rows(max_items), columns(max_items);
   std::vector<bool> isIceFree(max_items);
-  
+
   for(unsigned int i = 0; i < 2; ++i) {
     parents[i]   = 0;
     lengths[i]   = 0;
@@ -35,9 +35,9 @@ void FillingAlgCC::fill2Level(double Level) {
     columns[i]   = 0;
     isIceFree[i] = false;
   }
-    
+
   unsigned int run_number = 1;
-    
+
   for (unsigned int r = 0; r < m_nRows; ++r) {
     for (unsigned int c = 0; c < m_nCols; ++c) {
       if (ForegroundCond(r, c, Level)) {
@@ -58,9 +58,9 @@ void FillingAlgCC::fill2Level(double Level) {
       }
     }
   }
-    
+
   std::vector<bool> isOpen(run_number + 1);
-  
+
   labelRuns(run_number, parents, isIceFree, isOpen);
 
   labelMap(Level, run_number, rows, columns, parents, lengths, isOpen);
@@ -71,16 +71,16 @@ bool FillingAlgCC::SinkCond(unsigned int r, unsigned int c) {
 }
 
 bool FillingAlgCC::ForegroundCond(unsigned int r, unsigned int c, double Level) {
-  return (((m_topo[r * m_nCols + c] + (m_drho * m_thk[r * m_nCols + c])) < Level) or 
+  return (((m_topo[r * m_nCols + c] + (m_drho * m_thk[r * m_nCols + c])) < Level) or
           (m_mask_run[r * m_nCols + c] > 0));
 }
 
-void FillingAlgCC::labelMap(double Level, 
-                            unsigned int run_number, 
-                            std::vector<unsigned int> &rows, 
-                            std::vector<unsigned int> &columns, 
-                            std::vector<unsigned int> &parents, 
-                            std::vector<unsigned int> &lengths, 
+void FillingAlgCC::labelMap(double Level,
+                            unsigned int run_number,
+                            std::vector<unsigned int> &rows,
+                            std::vector<unsigned int> &columns,
+                            std::vector<unsigned int> &parents,
+                            std::vector<unsigned int> &lengths,
                             std::vector<bool> &isOpen) {
   // label Lakes
   for(unsigned int k = 0; k <= run_number; ++k) {
@@ -123,14 +123,14 @@ void FillingAlgCC::setRunSink(std::vector<unsigned int> &parents, unsigned int r
   parents[run] = 1;
 }
 
-void FillingAlgCC::checkForegroundPixel(unsigned int c, 
-                                        unsigned int r, 
-                                        bool isSink, 
-                                        unsigned int &run_number, 
-                                        std::vector<unsigned int> &rows, 
-                                        std::vector<unsigned int> &columns, 
-                                        std::vector<unsigned int> &parents, 
-                                        std::vector<unsigned int> &lengths, 
+void FillingAlgCC::checkForegroundPixel(unsigned int c,
+                                        unsigned int r,
+                                        bool isSink,
+                                        unsigned int &run_number,
+                                        std::vector<unsigned int> &rows,
+                                        std::vector<unsigned int> &columns,
+                                        std::vector<unsigned int> &parents,
+                                        std::vector<unsigned int> &lengths,
                                         std::vector<bool> &isIceFree) {
   if((c > 0) && (m_mask_run[r*m_nCols + (c-1)] > 0)) {
     // one to the left is also foreground: continue the run
@@ -162,14 +162,14 @@ void FillingAlgCC::checkForegroundPixel(unsigned int c,
   if((r > 0) and (m_mask_run[(r - 1) * m_nCols + c] > 0)) {
     run_union(parents, (unsigned int)m_mask_run[(r - 1) * m_nCols + c], run_number);
   }
-  
+
   m_mask_run[r * m_nCols + c] = run_number;
 }
 
 
-void FillingAlgCC::labelRuns(unsigned int run_number, 
-                             std::vector<unsigned int> &parents, 
-                             std::vector<bool> &isIceFree, 
+void FillingAlgCC::labelRuns(unsigned int run_number,
+                             std::vector<unsigned int> &parents,
+                             std::vector<bool> &isIceFree,
                              std::vector<bool> &isOpen) {
   unsigned int label = 0;
   for(unsigned int k = 0; k <= run_number; ++k) {
