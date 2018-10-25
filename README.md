@@ -3,7 +3,7 @@ Standalone Python module to identify lake basins
 
 ![figure](https://github.com/sebhinck/LakeCC/blob/master/examples/GreatLakes.png)
 
-The algorithm is based on the COnnected Components algorithm and was inspired by the work of Constantine Khrulev (https://github.com/ckhroulev/connected-components).
+The algorithm is based on the Connected Components algorithm and was inspired by the work of Constantine Khrulev (https://github.com/ckhroulev/connected-components).
 
 ## Building
 Run `make all` in base directory.
