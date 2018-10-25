@@ -43,6 +43,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   from netCDF4 import Dataset
   import LakeCC as LCC
 
+  print ("Reading file "+fIn+" ...")
   ncIn = Dataset(fIn, 'r')
 
   topg = getNcVarSlice(ncIn, 'topg', tind)
@@ -61,24 +62,26 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   try:
     thk = getNcVarSlice(ncIn, 'thk', tind, shape)
   except:
-    print(" -> Setting it to zero")
+    print("   -> Setting it to zero")
     thk = np.zeros(shape)
 
   try:
     ocean_mask = getNcVarSlice(ncIn, 'ocean_mask', tind, shape)
   except:
-    print (" -> Calculate it from topg, thk and sea_level.")
+    print ("   -> Calculate it from topg, thk and sea_level.")
     try:
       sea_level = getNcVarSlice(ncIn, 'sea_level', tind, shape)
     except:
-      print (" -> Determine sea_level using SeaLevelCC model. Check if sl_mask is present.")
+      print ("   -> Determine sea_level using SeaLevelCC model. Check if sl_mask is present.")
       try:
         sl_mask = getNcVarSlice(ncIn, 'sl_mask', tind, shape)
       except:
-        print (" -> Set sl_mask 1 at the margins.")
+        print ("   -> Set sl_mask 1 at the margins.")
         sl_mask = np.zeros(shape)
         sl_mask[(0, -1),:] = 1
         sl_mask[:,(0, -1)] = 1
+
+      print("")
       #sl_mask defined
       t_sl = myTimer('Sea level calculation')
       sea_level = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea, thk_if, sl)
@@ -93,7 +96,6 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   lake_level = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, thk_if, setMarginSink, dz, zMin, zMax)
   t_ll.toc()
 
-
   zMin_tmp = zMin
   if zMin_tmp is None:
     zMin_tmp = np.min(topg)
@@ -102,6 +104,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   if zMax_tmp is None:
     zMax_tmp = np.max(topg)
   print("Size of map: "+str(shape[0])+"x"+str(shape[1])+", number of levels checked: "+str(int( (zMax_tmp - zMin_tmp)/dz )))
+  print("")
 
   ncIn.close()
 
@@ -147,7 +150,7 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   lake_level_out.units = "m"
 
   ncOut.close()
-
+  print ("Written results to file "+fOut+" !")
 
 def computeOceanMask(topg, thk, sea_level, alpha, shape):
 
@@ -176,7 +179,7 @@ def getNcVarSlice(nc, varname, tind = -1, shape = None):
     else:
       raise ValueError("Wrong number of dimensions: "+str(len(dims)))
   except:
-    print(varname + " not found in file.")
+    print("-" + varname + " not found in file.")
     raise
 
   if shape is not None:
