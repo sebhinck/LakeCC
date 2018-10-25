@@ -42,12 +42,12 @@ from __future__ import absolute_import, division, print_function
 def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho_sea=1027., rho_fresh=1000., tind=-1, thk_if=10., setMarginSink=True):
   from netCDF4 import Dataset
   import LakeCC as LCC
-  
+
   ncIn = Dataset(fIn, 'r')
-  
-  topg = getNcVarSlice(ncIn, 'topg', tind).astype("double")
+
+  topg = getNcVarSlice(ncIn, 'topg', tind)
   shape = topg.shape
-  
+
   try:
     x = nc.variables['x'][:]
   except:
@@ -57,61 +57,58 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
     y = nc.variables['y'][:]
   except:
     y = np.arange(0, shape[0])
-  
-  try:
-    thk = getNcVarSlice(ncIn, 'thk', tind, shape).astype("double")
-  except:
-    print(" -> Setting it to zero")
-    thk = np.zeros(shape).astype("double")
 
   try:
-    ocean_mask = getNcVarSlice(ncIn, 'ocean_mask', tind, shape).astype("double")
+    thk = getNcVarSlice(ncIn, 'thk', tind, shape)
+  except:
+    print(" -> Setting it to zero")
+    thk = np.zeros(shape)
+
+  try:
+    ocean_mask = getNcVarSlice(ncIn, 'ocean_mask', tind, shape)
   except:
     print (" -> Calculate it from topg, thk and sea_level.")
     try:
-      sea_level = getNcVarSlice(ncIn, 'sea_level', tind, shape).astype("double")
+      sea_level = getNcVarSlice(ncIn, 'sea_level', tind, shape)
     except:
       print (" -> Determine sea_level using SeaLevelCC model. Check if sl_mask is present.")
       try:
-        sl_mask = getNcVarSlice(ncIn, 'sl_mask', tind, shape).astype("double")
+        sl_mask = getNcVarSlice(ncIn, 'sl_mask', tind, shape)
       except:
         print (" -> Set sl_mask 1 at the margins.")
-        sl_mask = np.zeros(shape).astype("double")
+        sl_mask = np.zeros(shape)
         sl_mask[(0, -1),:] = 1
         sl_mask[:,(0, -1)] = 1
       #sl_mask defined
       t_sl = myTimer('Sea level calculation')
-      SLM = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea, thk_if)
-      SLM.fill2SeaLevel(sl)
-      sea_level = SLM.getFloatationLevel()
+      sea_level = LCC.SeaLevelModelCC(topg, thk, sl_mask, rho_ice, rho_sea, thk_if, sl)
       t_sl.toc()
 
     #Sea Level is present
     alpha = 1. - (rho_ice / rho_sea)
-    ocean_mask = computeOceanMask(topg, thk, sea_level, alpha, shape).astype("double")
-    
+    ocean_mask = computeOceanMask(topg, thk, sea_level, alpha, shape)
+
   #pism_mask is present
   t_ll = myTimer('Lake level caluculation')
-  LM = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, thk_if, setMarginSink)
-  LM.fillLakes(dz, zMin, zMax)
-  lake_level = LM.getFloatationLevel()
+  lake_level = LCC.LakeModelCC(topg, thk, ocean_mask, rho_ice, rho_fresh, thk_if, setMarginSink, dz, zMin, zMax)
   t_ll.toc()
 
 
   zMin_tmp = zMin
   if zMin_tmp is None:
-    zMin_tmp = np.min(topg)  
+    zMin_tmp = np.min(topg)
+
   zMax_tmp = zMax
   if zMax_tmp is None:
     zMax_tmp = np.max(topg)
   print("Size of map: "+str(shape[0])+"x"+str(shape[1])+", number of levels checked: "+str(int( (zMax_tmp - zMin_tmp)/dz )))
-          
+
   ncIn.close()
-  
+
   ncOut = Dataset(fOut, 'w')
-  
+
   missing_value = -2.e+09
- 
+
   xDim = ncOut.createDimension('x', len(x))
   yDim = ncOut.createDimension('y', len(y))
 
@@ -122,18 +119,18 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
 
   x_out[:] = x[:]
   y_out[:] = y[:]
- 
+
   topg_out = ncOut.createVariable('topg','f4', ['y','x'])
   topg_out[:] = topg[:,:]
   topg_out.units = "m"
-  
+
   thk_out = ncOut.createVariable('thk','f4', ['y','x'])
   thk_out[:] = thk[:,:]
   thk_out.units = "m"
-  
+
   ocean_mask_out = ncOut.createVariable('ocean_mask','i', ['y','x'])
   ocean_mask_out[:] = ocean_mask[:,:]
-  
+
   sea_level_out = ncOut.createVariable('sea_level','f4', ['y','x'], fill_value=missing_value)
   sea_level_tmp = sea_level.copy()
   sea_level_tmp[np.isnan(sea_level)] = missing_value
@@ -142,13 +139,13 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
 
   sl_mask_out = ncOut.createVariable('sl_mask','i', ['y','x'])
   sl_mask_out[:] = sl_mask[:,:]
-  
+
   lake_level_out = ncOut.createVariable('lake_level','f4', ['y','x'], fill_value=missing_value)
   lake_level_tmp = lake_level.copy()
   lake_level_tmp[np.isnan(lake_level)] = missing_value
   lake_level_out[:] = lake_level_tmp[:,:]
   lake_level_out.units = "m"
-  
+
   ncOut.close()
 
 
@@ -175,18 +172,18 @@ def getNcVarSlice(nc, varname, tind = -1, shape = None):
     if len(dims) == 2:
       data = var[:,:]
     elif len(dims) == 3:
-      data = var[tind, :, :]    
+      data = var[tind, :, :]
     else:
       raise ValueError("Wrong number of dimensions: "+str(len(dims)))
   except:
     print(varname + " not found in file.")
     raise
-    
+
   if shape is not None:
     if shape != data.shape:
       raise ValueError("Dimensions of "+varname+ "do not match required dimensions.")
-      
-  return data
+
+  return data.astype("double")
 
 def main():
   options = parse_args()
@@ -241,14 +238,14 @@ class myTimer():
         self.running = False
         if start:
             self.tic()
-            
+
     def tic(self):
         #if self.Name is not None:
         #    print(self.Name ,"started at:", time.strftime('%X', time.localtime()))
-            
-        self.running = True            
+
+        self.running = True
         self.StartTime = time.monotonic()
-        
+
     def toc(self):
         if self.running:
             self.EndTime = time.monotonic()
@@ -258,18 +255,18 @@ class myTimer():
             #    print(self.Name ,"ended at:", time.strftime('%X', time.localtime()))
         else:
             dt = None
-            
+
         self.reportEnd(dt)
-        
+
     def report(self, dt, verb='running for'):
         if self.Name is not None:
             print(self.Name ,verb, dt)
         else:
             print(dt)
-            
+
     def reportEnd(self, dt):
         self.report(dt, 'took')
-        
+
     def elapsed(self):
         now = time.monotonic()
         dt = timedelta(seconds = now - self.StartTime)

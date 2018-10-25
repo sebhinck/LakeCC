@@ -1,127 +1,107 @@
 # -*- mode: cython -*-
 cimport numpy as np
-import numpy
-from cython.view cimport array as cvarray
+import numpy as np
 cimport LakeModel_ConnectedComponents
 
 ctypedef np.float64_t double_t
 ctypedef np.int64_t int_t
 
-cdef class LakeModelCC:
+def LakeModelCC(np.ndarray[dtype=double_t, ndim=2, mode='c'] topg,
+                np.ndarray[dtype=double_t, ndim=2, mode='c'] thk,
+                np.ndarray[dtype=double_t, ndim=2, mode='c'] ocean_mask,
+                rho_i, rho_w, ice_free_thickness = 10, setMarginSink=True,
+                dz=10., zMin=None, zMax=None):
 
-    cdef double_t[:,:] topg
-    cdef double_t[:,:] thk
-    cdef double_t[:,:] floatation_level
-    cdef double_t topgMax, topgMin
-    cdef double_t[:,:] mask_run
-    cdef int pism_mask_free_rock
-    cdef int pism_mask_grounded
-    cdef int pism_mask_floating
-    cdef int pism_mask_free_ocean
-    cdef int pism_mask_lake
-    cdef double drho
-    cdef double ice_free_thickness
-    
-    cdef LakeModel_ConnectedComponents.LakeLevelCC* c_LakeModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] ocean_mask, rho_i, rho_w, ice_free_thickness = 10, setMarginSink=True):
-        
-        cdef unsigned int n_rows, n_cols
-        n_rows = topg.shape[0]
-        n_cols = topg.shape[1]
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_floatation_level
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_topg
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_thk
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_mask_run
 
-        self.topg = topg.copy()
-        self.topgMax = topg.max()
-        self.topgMin = topg.min()
-        self.thk = thk.copy()
-        self.floatation_level = cvarray(shape=(n_rows, n_cols), itemsize = sizeof(double_t), format="d")
-        self.floatation_level[:,:] = <double_t>numpy.nan
+    cdef unsigned int n_rows, n_cols
+    cdef double topgMax, topgMin
 
-        if ocean_mask is not None:
-            self.mask_run = ocean_mask.copy()
-        else:
-            self.mask_run = numpy.zeros_like(topg)
-            
-        if setMarginSink:
-            self.mask_run[ 0,  :] = 1
-            self.mask_run[-1,  :] = 1
-            self.mask_run[: ,  0] = 1
-            self.mask_run[: , -1] = 1
-                    
-        self.drho = rho_i/rho_w
-        self.ice_free_thickness = ice_free_thickness
-        
-        self.c_LakeModelCC = new LakeModel_ConnectedComponents.LakeLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho, self.ice_free_thickness)
-        
-    def __dealloc__(self):
-        del self.c_LakeModelCC
-                
-    def gettopg(self):
-        return numpy.asarray(self.topg)
-    
-    def getThk(self):
-        return numpy.asarray(self.thk)
-    
-    def getFloatationLevel(self):
-        return numpy.asarray(self.floatation_level)
-    
-    def getMaskRun(self):
-        return numpy.asarray(self.mask_run).astype("int")
-                   
-    def fill2Level(self, double Level=0.0):
-            
-        self.c_LakeModelCC.fill2Level(Level)
-        
-    def fillLakes(self, dh=10., Min=None, Max=None):
-        
-        if Min is None:
-            Min = self.topgMin
-        if Max is None:
-            Max = self.topgMax        
+    n_rows = topg.shape[0]
+    n_cols = topg.shape[1]
 
-        self.c_LakeModelCC.floodMap(Min, Max, dh)
-        
-        
-cdef class SeaLevelModelCC:
+    topgMax = topg.max()
+    topgMin = topg.min()
 
-    cdef double_t[:,:] topg
-    cdef double_t[:,:] thk
-    cdef double_t[:,:] floatation_level
-    cdef double_t[:,:] mask_run
-    cdef double drho
-    cdef double ice_free_thickness
-    
-    cdef LakeModel_ConnectedComponents.SeaLevelCC* c_SeaLevelModelCC      # hold a C++ instance which we're wrapping
-    def __cinit__(self, np.ndarray[dtype=double_t, ndim=2, mode='c'] topg, np.ndarray[dtype=double_t, ndim=2, mode='c'] thk, np.ndarray[dtype=double_t, ndim=2, mode='c'] mask_run, rho_i, rho_w, ice_free_thickness = 10):
-      
-        cdef unsigned int n_rows, n_cols
-        n_rows = topg.shape[0]
-        n_cols = topg.shape[1]
-        
-        self.topg = topg.copy()
-        self.thk = thk.copy()
-        self.mask_run = mask_run.copy()
-        self.floatation_level = thk.copy()
-        self.floatation_level[:,:] = <double_t>numpy.nan
+    m_topg = topg.copy()
+    m_thk  = thk.copy()
 
-        self.drho = rho_i/rho_w
-        self.ice_free_thickness = ice_free_thickness
-        
-        self.c_SeaLevelModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols, &self.topg[0,0], &self.thk[0,0], &self.floatation_level[0,0], &self.mask_run[0,0], self.drho, self.ice_free_thickness)
-        
-    def __dealloc__(self):
-        del self.c_SeaLevelModelCC
-                
-    def gettopg(self):
-        return numpy.asarray(self.topg)
-    
-    def getThk(self):
-        return numpy.asarray(self.thk)
-    
-    def getFloatationLevel(self):
-        return numpy.asarray(self.floatation_level)
-         
-    def fill2SeaLevel(self, double SeaLevel=0.0):
-            
-        self.c_SeaLevelModelCC.fill2SeaLevel(SeaLevel)
-        
-        
+    if ocean_mask is not None:
+        m_mask_run = ocean_mask.copy()
+    else:
+        m_mask_run = np.zeros_like(topg)
+
+    if setMarginSink:
+        m_mask_run[ 0,  :] = 1
+        m_mask_run[-1,  :] = 1
+        m_mask_run[: ,  0] = 1
+        m_mask_run[: , -1] = 1
+
+    m_floatation_level = np.zeros_like(topg)
+    m_floatation_level[:,:] = <double_t>np.nan
+
+    drho = rho_i/rho_w
+    ice_free_thickness = ice_free_thickness
+
+    if zMin is None:
+        zMin = topgMin
+    if zMax is None:
+        zMax = topgMax
+
+    cdef LakeModel_ConnectedComponents.LakeLevelCC* c_LakeModelCC
+    c_LakeModelCC = new LakeModel_ConnectedComponents.LakeLevelCC(n_rows, n_cols,
+                                                                  &m_topg[0,0],
+                                                                  &m_thk[0,0],
+                                                                  &m_floatation_level[0,0],
+                                                                  &m_mask_run[0,0],
+                                                                  drho,
+                                                                  ice_free_thickness)
+    c_LakeModelCC.floodMap(zMin, zMax, dz)
+
+    del c_LakeModelCC
+
+    return m_floatation_level
+
+
+
+def SeaLevelModelCC(np.ndarray[dtype=double_t, ndim=2, mode='c'] topg,
+                    np.ndarray[dtype=double_t, ndim=2, mode='c'] thk,
+                    np.ndarray[dtype=double_t, ndim=2, mode='c'] mask_run,
+                    rho_i, rho_w, ice_free_thickness = 10, sl = 0.0):
+
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_floatation_level
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_topg
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_thk
+    cdef np.ndarray[dtype=double_t, ndim=2, mode='c'] m_mask_run
+
+    cdef unsigned int n_rows, n_cols
+
+    n_rows = topg.shape[0]
+    n_cols = topg.shape[1]
+
+    m_topg = topg.copy()
+    m_thk  = thk.copy()
+    m_mask_run = mask_run.copy()
+
+    m_floatation_level = np.zeros([n_rows, n_cols])
+    m_floatation_level[:,:] = <double_t>np.nan
+
+    drho = rho_i/rho_w
+    ice_free_thickness = ice_free_thickness
+
+    cdef LakeModel_ConnectedComponents.SeaLevelCC* c_SeaLevelModelCC
+    c_LakeModelCC = new LakeModel_ConnectedComponents.SeaLevelCC(n_rows, n_cols,
+                                                                 &m_topg[0,0],
+                                                                 &m_thk[0,0],
+                                                                 &m_floatation_level[0,0],
+                                                                 &m_mask_run[0,0],
+                                                                 drho,
+                                                                 ice_free_thickness)
+    c_LakeModelCC.fill2SeaLevel(sl)
+
+    del c_SeaLevelModelCC
+
+    return m_floatation_level
