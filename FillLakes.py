@@ -50,12 +50,12 @@ def FillLakes(fIn, fOut, sl=0.0, dz=10., zMin=None, zMax=None, rho_ice=910., rho
   shape = topg.shape
 
   try:
-    x = nc.variables['x'][:]
+    x = ncIn.variables['x'][:]
   except:
     x = np.arange(0, shape[1])
 
   try:
-    y = nc.variables['y'][:]
+    y = ncIn.variables['y'][:]
   except:
     y = np.arange(0, shape[0])
 
