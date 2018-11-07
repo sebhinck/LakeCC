@@ -5,6 +5,8 @@ Standalone Python module to identify lake basins
 
 The algorithm is based on the Connected Components algorithm and was inspired by the work of Constantine Khrulev (https://github.com/ckhroulev/connected-components).
 
+->Evan, a description how you prepare everything can be found [here](Evan_HowTo.md)
+
 ## Building
 Run `make all` in base directory.
 
