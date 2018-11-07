@@ -306,7 +306,7 @@ def parse_args():
     if not os.path.isdir(options.output):
       os.mkdir(options.output)
   if os.path.isdir(options.output):
-    oname = str(options.year)+"kaBP_lakes"
+    oname = str(options.year)+"_lakes"
     if options.filterWidth is None:
       if options.topo_filtered is None:
         oname = oname + "_unfiltered"
