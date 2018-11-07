@@ -44,4 +44,4 @@
 
 10. Execute it with `./FillLakes_Evan.py -y YEAR -f FILTER_WIDTH ....`   
     Make sure that Data for `YEAR` is present in folder `input_dir` and that  `etopo1_LIS_Evan_filtered**FILTER_WIDTH**km.nc` is available in folder `etopo_dir`.  
-    For a list of all options see ./FillLakes_Evan.py -h
+    For a list of all options see `./FillLakes_Evan.py -h`
