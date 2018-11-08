@@ -237,12 +237,14 @@ def parse_args():
   #############################################################################################
   ####Set defaults   ##########################################################################
   #############################################################################################
+  dataset_name="rtopo2" #"etopo1" 
+  
   #default_input_dir = "."
   default_input_dir = "/scratch/users/shinck/IceModelling/Evan_13"
 
-  #If set to None, default will be "input-dir/etopo1"
-  #default_etopo_dir = None
-  default_etopo_dir = "/scratch/users/shinck/IceModelling/Evan_13/etopo1"
+  #If set to None, default will be "input-dir/dataset_name"
+  #default_topo_dir = None
+  default_topo_dir = "/scratch/users/shinck/IceModelling/Evan_13/"+dataset_name
 
   #If set to None, default will be "input-dir/lakes"
   #default_output_dir = None 
@@ -266,8 +268,8 @@ def parse_args():
   parser.add_argument("-y", "--year",  dest="year",  required=True, help="Year of time-slice")
   parser.add_argument("-i", "--input-dir", dest="inDir", help="Directory that contains input data", default=default_input_dir, type=lambda x: os.path.abspath(x))
   parser.add_argument("-f", "--filter_width", dest="filterWidth", help="Filter width [km]", type=int)
-  parser.add_argument("-t", "--topo", dest="topo", help="Directory or path of topography file", default=default_etopo_dir, metavar="FILE", type=lambda x: os.path.abspath(x))
-  parser.add_argument("-tf", "--topo_filtered", dest="topo_filtered", help="Directory or path of filtered topography file", default=default_etopo_dir, metavar="FILE", type=lambda x: os.path.abspath(x))
+  parser.add_argument("-t", "--topo", dest="topo", help="Directory or path of topography file", default=default_topo_dir, metavar="FILE", type=lambda x: os.path.abspath(x))
+  parser.add_argument("-tf", "--topo_filtered", dest="topo_filtered", help="Directory or path of filtered topography file", default=default_topo_dir, metavar="FILE", type=lambda x: os.path.abspath(x))
   parser.add_argument("-o", "--output", dest="output", help="Output directory or file", default=default_output_dir, metavar="FILE", type=lambda x: os.path.abspath(x))
   parser.add_argument('-sl', "--sea-level", dest="sl", help="scalar sea-level", default=default_sl, type=float)
   parser.add_argument('-dz', "--lake_level_spacing", dest="dz", help="Lake level spacing", default=default_dz, type=float)
@@ -285,9 +287,9 @@ def parse_args():
   options = parser.parse_args()
 
   if options.topo is None:
-    options.topo = os.path.join(options.inDir, "etopo1")
+    options.topo = os.path.join(options.inDir, dataset_name)
   if os.path.isdir(options.topo):
-    options.topo = os.path.join(options.topo, "etopo1_LIS_Evan.nc")
+    options.topo = os.path.join(options.topo, dataset_name+"_LIS_Evan.nc")
   if not os.path.isfile(options.topo):
     options.topo = None
 
@@ -295,9 +297,9 @@ def parse_args():
     if os.path.isfile(options.topo):
       options.topo_filtered = os.path.dirname(options.topo)
     else:
-      options.topo_filtered = os.path.join(options.inDir, "etopo1")
+      options.topo_filtered = os.path.join(options.inDir, dataset_name)
   if os.path.isdir(options.topo_filtered):
-    options.topo_filtered = os.path.join(options.topo_filtered, "etopo1_LIS_Evan_filtered"+str(options.filterWidth)+"km.nc")
+    options.topo_filtered = os.path.join(options.topo_filtered, dataset_name+"_LIS_Evan_filtered"+str(options.filterWidth)+"km.nc")
   if not os.path.isfile(options.topo_filtered):
     options.topo_filtered = None
 
