@@ -17,7 +17,7 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   
   if (topo_file is not None):
     ncTopo = Dataset(topo_file, 'r')
-    topg = getNcVarSlice(ncTopo, 'z')
+    topg = getNcVarSlice(ncTopo, ['z', 'bedrock_topography'])
   else:
     ncTopo = Dataset(fusurf, 'r')
     topg = getNcVarSlice(ncTopo, 'z')
@@ -27,21 +27,19 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
 
   if (topo_filtered_file is not None):
     ncTopoFiltered = Dataset(topo_filtered_file, 'r')
-    topg_filtered = getNcVarSlice(ncTopoFiltered, 'z', shape)
+    topg_filtered = getNcVarSlice(ncTopoFiltered, ['z', 'bedrock_topography'], shape)
     ncTopoFiltered.close()
   else:
     ncTopoFiltered = None
 
   dx = 1.0
   try:
-    #x = ncUsurf.variables['x'][:]
     x = ncTopo.variables['x'][:]
     dx = (x[1] -x[0])/1000.     #dx in km, not m
   except:
     x = np.arange(0, shape[1])
 
   try:
-    #y = ncUsurf.variables['y'][:]
     y = ncTopo.variables['y'][:]
   except:
     y = np.arange(0, shape[0])
@@ -201,18 +199,38 @@ def computeOceanMask(topg, thk, sea_level, alpha, shape):
 
   return mask
 
+def getNcVarName(nc, var_names):
+  if type(var_names) is not list:
+    var_names = [var_names]
+
+  name = None
+  for var_name in var_names:
+    try:
+      name = var_name
+      nc.variables[name]
+    except:
+      name = None
+
+    if name is not None:
+      break
+
+  return name
+
 
 def getNcVarSlice(nc, varname = "z", shape = None):
+
+  name = getNcVarName(nc, varname)
+
   try:
-    var = nc.variables[varname]
+    var = nc.variables[name]
     data = var[:,:]
   except:
-    print("-" + varname + " not found in file.")
+    print("-" + str(varname) + " not found in file.")
     raise
 
   if shape is not None:
     if shape != data.shape:
-      raise ValueError("Dimensions of "+varname+ "do not match required dimensions.")
+      raise ValueError("Dimensions of "+name+ "do not match required dimensions.")
 
   return data.astype("double")
 
