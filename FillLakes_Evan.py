@@ -64,7 +64,7 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
     lon = None
 
   try:
-    proj4 = ncTopo.getncattrs('proj4')
+    proj4 = getattr(ncTopo,'proj4')
   except:
     proj4 = None
 
