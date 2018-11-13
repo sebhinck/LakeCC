@@ -14,7 +14,7 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   ncDeform = Dataset(fdeform, 'r')
   ncThk   = Dataset(fthk, 'r')
   ncTopo= Dataset(topo_file, 'r')
-  
+
   if (topo_file is not None):
     ncTopo = Dataset(topo_file, 'r')
     topg = getNcVarSlice(ncTopo, ['z', 'bedrock_topography'])
@@ -44,7 +44,29 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   except:
     y = np.arange(0, shape[0])
 
-  ncTopo.close()
+  try:
+    mapping = ncTopo.variables['mapping']
+  except:
+    mapping = None
+
+  try:
+    lat = ncTopo.variables['lat']
+  except:
+    lat = None
+
+  try:
+    lon = ncTopo.variables['lon']
+  except:
+    lon = None
+
+  if (lat is None or lon is None):
+    lat = None
+    lon = None
+
+  try:
+    proj4 = ncTopo.getncattrs('proj4')
+  except:
+    proj4 = None
 
   try:
     thk = getNcVarSlice(ncThk, 'z', shape)
@@ -116,6 +138,14 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
 
   ncOut = Dataset(fOut, 'w')
 
+  if proj4 is not None:
+    ncOut.proj4 = proj4
+
+  if mapping is not None:
+    mapping_out = ncOut.createVariable(mapping.name, mapping.datatype, mapping.dimensions)
+    mapping_out[:] = mapping[:]
+    mapping_out.setncatts(mapping.__dict__)
+
   missing_value = -2.e+09
 
   xDim = ncOut.createDimension('x', len(x))
@@ -124,63 +154,102 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
 
   x_out = ncOut.createVariable('x','f4', ['x'])
   x_out.units = "m"
+  x_out.axis = "X"
   y_out = ncOut.createVariable('y','f4', ['y'])
   y_out.units = "m"
+  y_out.axis = "Y"
   t_out = ncOut.createVariable('time','f4', ['t'])
   t_out.units = "years"
+  t_out.axis = "T"
 
   x_out[:] = x[:]
   y_out[:] = y[:]
   t_out[:] = year
 
+  if lon is not None:
+    lon_out = ncOut.createVariable(lon.name, lon.datatype, lon.dimensions)
+    lon_out[:] = lon[:]
+    lon_out.setncatts(lon.__dict__)
+    lon_out.delncattr('bounds')
+
+    lat_out = ncOut.createVariable(lat.name, lat.datatype, lat.dimensions)
+    lat_out[:] = lat[:]
+    lat_out.setncatts(lat.__dict__)
+    lat_out.delncattr('bounds')
+
   topg_out = ncOut.createVariable('topg','f4', ['t','y','x'])
   topg_out[:] = topg[:,:]
   topg_out.units = "m"
+  if mapping is not None:
+    topg_out.grid_mapping = mapping.name
+  if lon is not None:
+    topg_out.coordinates = "lat lon"
   
-  topg_filtered_out = ncOut.createVariable('topg_filtered','f4', ['t','y','x'])
-  topg_filtered_out[:] = topg_filtered[:,:]
-  topg_filtered_out.units = "m"
+  #topg_filtered_out = ncOut.createVariable('topg_filtered','f4', ['t','y','x'])
+  #topg_filtered_out[:] = topg_filtered[:,:]
+  #topg_filtered_out.units = "m"
 
   thk_out = ncOut.createVariable('thk','f4', ['t','y','x'])
   thk_out[:] = thk[:,:]
   thk_out.units = "m"
+  if mapping is not None:
+    thk_out.grid_mapping = mapping.name
+  if lon is not None:
+    thk_out.coordinates = "lat lon"
 
   ocean_mask_out = ncOut.createVariable('ocean_mask','i', ['t','y','x'])
   ocean_mask_out[:] = ocean_mask[:,:]
+  if mapping is not None:
+    ocean_mask_out.grid_mapping = mapping.name
+  if lon is not None:
+    ocean_mask_out.coordinates = "lat lon"
 
   sea_level_out = ncOut.createVariable('sea_level','f4', ['t','y','x'], fill_value=missing_value)
   sea_level_tmp = sea_level.copy()
   sea_level_tmp[np.isnan(sea_level)] = missing_value
   sea_level_out[:] = sea_level_tmp[:,:]
   sea_level_out.units = "m"
+  if mapping is not None:
+    sea_level_out.grid_mapping = mapping.name
+  if lon is not None:
+    sea_level_out.coordinates = "lat lon"
 
-  sl_mask_out = ncOut.createVariable('sl_mask','i', ['t','y','x'])
-  sl_mask_out[:] = sl_mask[:,:]
+  #sl_mask_out = ncOut.createVariable('sl_mask','i', ['t','y','x'])
+  #sl_mask_out[:] = sl_mask[:,:]
 
   lake_level_out = ncOut.createVariable('lake_level','f4', ['t','y','x'], fill_value=missing_value)
   lake_level_tmp = lake_level.copy()
   lake_level_tmp[np.isnan(lake_level)] = missing_value
   lake_level_out[:] = lake_level_tmp[:,:]
   lake_level_out.units = "m"
+  if mapping is not None:
+    lake_level_out.grid_mapping = mapping.name
+  if lon is not None:
+    lake_level_out.coordinates = "lat lon"
   
-  lake_level_filtered_out = ncOut.createVariable('lake_level_filtered','f4', ['t','y','x'], fill_value=missing_value)
-  lake_level_filtered_tmp = lake_level_filtered.copy()
-  lake_level_filtered_tmp[np.isnan(lake_level_filtered)] = missing_value
-  lake_level_filtered_out[:] = lake_level_filtered_tmp[:,:]
-  lake_level_filtered_out.units = "m"
+  #lake_level_filtered_out = ncOut.createVariable('lake_level_filtered','f4', ['t','y','x'], fill_value=missing_value)
+  #lake_level_filtered_tmp = lake_level_filtered.copy()
+  #lake_level_filtered_tmp[np.isnan(lake_level_filtered)] = missing_value
+  #lake_level_filtered_out[:] = lake_level_filtered_tmp[:,:]
+  #lake_level_filtered_out.units = "m"
 
   lake_depth_out = ncOut.createVariable('lake_depth','f4', ['t','y','x'], fill_value=missing_value)
   lake_depth_tmp = lake_depth.copy()
   lake_depth_tmp[np.isnan(lake_depth)] = missing_value
   lake_depth_out[:] = lake_depth_tmp[:,:]
   lake_depth_out.units = "m"
+  if mapping is not None:
+    lake_depth_out.grid_mapping = mapping.name
+  if lon is not None:
+    lake_depth_out.coordinates = "lat lon"
   
-  lake_depth_filtered_out = ncOut.createVariable('lake_depth_filtered','f4', ['t','y','x'], fill_value=missing_value)
-  lake_depth_filtered_tmp = lake_depth_filtered.copy()
-  lake_depth_filtered_tmp[np.isnan(lake_depth_filtered)] = missing_value
-  lake_depth_filtered_out[:] = lake_depth_filtered_tmp[:,:]
-  lake_depth_filtered_out.units = "m"
+  #lake_depth_filtered_out = ncOut.createVariable('lake_depth_filtered','f4', ['t','y','x'], fill_value=missing_value)
+  #lake_depth_filtered_tmp = lake_depth_filtered.copy()
+  #lake_depth_filtered_tmp[np.isnan(lake_depth_filtered)] = missing_value
+  #lake_depth_filtered_out[:] = lake_depth_filtered_tmp[:,:]
+  #lake_depth_filtered_out.units = "m"
 
+  ncTopo.close()
   ncOut.close()
   print ("Written results to file "+fOut+" !")
 
@@ -239,7 +308,7 @@ def getNcVarSlice(nc, varname = "z", shape = None):
 
 def main():
   options = parse_args()
-  
+
   if options.lib is not None:
     import sys
     for p in options.lib[:]:
