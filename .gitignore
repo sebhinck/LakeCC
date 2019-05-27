@@ -4,3 +4,7 @@ cython/LakeCC.cpp
 *.grd.gz
 build/
 *.so
+*.out
+*.txt
+*.diff
+

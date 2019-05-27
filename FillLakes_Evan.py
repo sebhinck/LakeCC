@@ -158,13 +158,13 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   y_out = ncOut.createVariable('y','f4', ['y'])
   y_out.units = "m"
   y_out.axis = "Y"
-  t_out = ncOut.createVariable('time','f4', ['t'])
+  t_out = ncOut.createVariable('t','f4', ['t'])
   t_out.units = "years"
   t_out.axis = "T"
 
   x_out[:] = x[:]
   y_out[:] = y[:]
-  t_out[:] = year
+  t_out[:] = float(year)
 
   if lon is not None:
     lon_out = ncOut.createVariable(lon.name, lon.datatype, lon.dimensions)
@@ -185,9 +185,9 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   if lon is not None:
     topg_out.coordinates = "lat lon"
   
-  #topg_filtered_out = ncOut.createVariable('topg_filtered','f4', ['t','y','x'])
-  #topg_filtered_out[:] = topg_filtered[:,:]
-  #topg_filtered_out.units = "m"
+  topg_filtered_out = ncOut.createVariable('topg_filtered','f4', ['t','y','x'])
+  topg_filtered_out[:] = topg_filtered[:,:]
+  topg_filtered_out.units = "m"
 
   thk_out = ncOut.createVariable('thk','f4', ['t','y','x'])
   thk_out[:] = thk[:,:]
@@ -227,11 +227,11 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   if lon is not None:
     lake_level_out.coordinates = "lat lon"
   
-  #lake_level_filtered_out = ncOut.createVariable('lake_level_filtered','f4', ['t','y','x'], fill_value=missing_value)
-  #lake_level_filtered_tmp = lake_level_filtered.copy()
-  #lake_level_filtered_tmp[np.isnan(lake_level_filtered)] = missing_value
-  #lake_level_filtered_out[:] = lake_level_filtered_tmp[:,:]
-  #lake_level_filtered_out.units = "m"
+  lake_level_filtered_out = ncOut.createVariable('lake_level_filtered','f4', ['t','y','x'], fill_value=missing_value)
+  lake_level_filtered_tmp = lake_level_filtered.copy()
+  lake_level_filtered_tmp[np.isnan(lake_level_filtered)] = missing_value
+  lake_level_filtered_out[:] = lake_level_filtered_tmp[:,:]
+  lake_level_filtered_out.units = "m"
 
   lake_depth_out = ncOut.createVariable('lake_depth','f4', ['t','y','x'], fill_value=missing_value)
   lake_depth_tmp = lake_depth.copy()
@@ -243,11 +243,11 @@ def FillLakes(year, topo_file, topo_filtered_file, inDir=".", fOut="./out.nc", s
   if lon is not None:
     lake_depth_out.coordinates = "lat lon"
   
-  #lake_depth_filtered_out = ncOut.createVariable('lake_depth_filtered','f4', ['t','y','x'], fill_value=missing_value)
-  #lake_depth_filtered_tmp = lake_depth_filtered.copy()
-  #lake_depth_filtered_tmp[np.isnan(lake_depth_filtered)] = missing_value
-  #lake_depth_filtered_out[:] = lake_depth_filtered_tmp[:,:]
-  #lake_depth_filtered_out.units = "m"
+  lake_depth_filtered_out = ncOut.createVariable('lake_depth_filtered','f4', ['t','y','x'], fill_value=missing_value)
+  lake_depth_filtered_tmp = lake_depth_filtered.copy()
+  lake_depth_filtered_tmp[np.isnan(lake_depth_filtered)] = missing_value
+  lake_depth_filtered_out[:] = lake_depth_filtered_tmp[:,:]
+  lake_depth_filtered_out.units = "m"
 
   ncTopo.close()
   ncOut.close()
@@ -327,20 +327,20 @@ def parse_args():
   dataset_name="rtopo2" #"etopo1" 
   
   #default_input_dir = "."
-  default_input_dir = "/scratch/users/shinck/IceModelling/Evan_13"
+  default_input_dir = "/home/ollie/shinck/projects/Evan/Evan_19"
 
   #If set to None, default will be "input-dir/dataset_name"
   #default_topo_dir = None
-  default_topo_dir = "/scratch/users/shinck/IceModelling/Evan_13/"+dataset_name
+  default_topo_dir = "/home/ollie/shinck/projects/Evan/Evan_19/"+dataset_name
 
   #If set to None, default will be "input-dir/lakes"
   #default_output_dir = None 
-  default_output_dir = "/scratch/users/shinck/IceModelling/Evan_13/lakes"
+  default_output_dir = "/home/ollie/shinck/projects/Evan/Evan_19/lakes"
   
   default_dz = 10
   #If set to None, filling will be done from lowest point of topography to highest point!
   default_zMin = 0
-  default_zMax = 1500
+  default_zMax = 1800
   
   default_sl = 0
   default_rho_i = 910.
