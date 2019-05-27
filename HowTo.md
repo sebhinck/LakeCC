@@ -1,47 +1,28 @@
-# Instructions for Evan
+# This file describes how the data was prepared and the LakeCC model was applied for the publication
 
-1. Get PismGrids from my Github account: `git@github.com:sebhinck/PismGrids.git`
-2. Define `${GRID_FOLDER}` and `${ETOPO_FOLDER}`
-  run `./run_create_domain_grid.sh LIS_Evan 5 ${GRID_FOLDER`, to create grid files needed for the projection   
-  **NOTE: This script needs the file nc2cdo.py from PISM. This can be found in the PISM-bin folder**
+1. Get high-res PD topography dataset (e.g. [Rtopo2](https://doi.pangaea.de/10.1594/PANGAEA.856844) )
 
-3. Download & convert Etopo1 Dataset:
+2. Extract Northern hemisphere to reduce file size: 
     ```
-    wget -nc https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/cell_registered/netcdf/ETOPO1_Bed_c_gmt4.grd.gz -P ${ETOPO_FOLDER}
-    gunzip ${ETOPO_FOLDER}/ETOPO1_Bed_c_gmt4.grd.gz
-    cdo -f nc copy ${ETOPO_FOLDER}/ETOPO1_Bed_c_gmt4.grd ${ETOPO_FOLDER}/ETOPO1_Bed_c_gmt4.nc
-    ```
-4. Extract Northern hemisphere to reduce file size: 
-    ```
-    cdo sellonlatbox,-180,180,23,90 ${ETOPO_FOLDER}/ETOPO1_Bed_c_gmt4.nc ${ETOPO_FOLDER}/etopo1_NH.nc
-    ```
-    
-5. Create bilinear interpolation weights:
-    ```
-    cdo -P 3 genbil,${GRID_FOLDER}/LIS_Evan/pismr_LIS_Evan_5km.griddes ${ETOPO_FOLDER}/etopo1_NH.nc ${ETOPO_FOLDER}/etopo1toLIS_Evan.nc
-    ```
-6. (Minimum) Filter Etopo1 dataset at desired filter width:
-    ```
-    gmt grdfilter ${ETOPO_FOLDER}/etopo1_NH.nc -G${ETOPO_FOLDER}/etopo1_NH_filtered**X**km.nc -Fl**X** -D4 -V
-    ```
-    i.e. `gmt grdfilter ${ETOPO_FOLDER}/etopo1_NH.nc -G${ETOPO_FOLDER}/etopo1_NH_filtered20km.nc -Fl20 -D4 -V`
-    
-7. Interpolate filtered
-    ```
-    cdo remap,${GRID_FOLDER}/LIS_Evan/pismr_LIS_Evan_5km.griddes,${ETOPO_FOLDER}/etopo1toLIS_Evan.nc ${ETOPO_FOLDER}/etopo1_NH_filtered**X**km.nc ${ETOPO_FOLDER}/etopo1_LIS_Evan_filtered**X**km.nc
-    ```
-    and unfiltered datasets onto chosen grid.
-    ```
-    cdo remap,${GRID_FOLDER}/LIS_Evan/pismr_LIS_Evan_5km.griddes,${ETOPO_FOLDER}/etopo1toLIS_Evan.nc ${ETOPO_FOLDER}/etopo1_NH.nc etopo1_LIS_Evan.nc
+    cdo sellonlatbox,-180,180,23,90 ${RTOPO_FOLDER}/RTOPO2.nc ${RTOPO_FOLDER}/RTOPO2_NH.nc
     ```
 
-8. Get LakeCC tools from my github (this repository): `git@github.com:sebhinck/LakeCC.git`   
-   Checkout branch `FillLakes_Evan`   
-   Install it by running `make all`
-    
-9. Make sure to match the file name pattern given above.   
-   You might want to adjust the default values for `input_dir`, `etopo_dir`, `output_dir`, ... in [FillLakes_Evan.py (in function "parse_args()" l.237ff)](https://github.com/sebhinck/LakeCC/blob/d51b8e5b23b89d51ac816dd0b7ca95c2d7e0017d/FillLakes_Evan.py#L237)  so that you don't have to specify it every time you run the tool.
+3. (Minimum) Filter RTOPO2 dataset at desired filter width:
+    ```
+    gmt grdfilter ${RTOPO_FOLDER}/RTOPO2_NH.nc -G${RTOPO_FOLDER}/RTOPO2_NH_filtered**X**km.nc -Fl**X** -D4 -V
+    ```
 
-10. Execute it with `./FillLakes_Evan.py -y YEAR -f FILTER_WIDTH ....`   
-    Make sure that Data for `YEAR` is present in folder `input_dir` and that  `etopo1_LIS_Evan_filtered**FILTER_WIDTH**km.nc` is available in folder `etopo_dir`.  
-    For a list of all options see `./FillLakes_Evan.py -h`
+4. Interpolate filtered
+    ```
+    cdo remapbil,${GRIDDES} ${RTOPO_FOLDER}/RTOPO2_NH_filteredXkm.nc ${RTOPO_FOLDER}/RTOPO2_LIS_filtered**X**km.nc
+    ```
+    and unfiltered datasets onto chosen grid (described by ${GRIDDES}).
+    ```
+    cdo remapbil,${GRIDDES} ${RTOPO_FOLDER}/RTOPO2_NH.nc ${RTOPO_FOLDER}/RTOPO2_LIS.nc
+    ```
+
+5. Adapt default values and filename patterns to your needs in `parse_args()` in file `FillLakes_publication.py`.
+
+6. Execute script `FillLakes_publication.py` with `./FillLakes_publication.py -y YEAR -f FILTER_WIDTH ....`   
+    Make sure that Data for `YEAR` is present in folder `input_dir` and that  `RTOPO2_LIS_filteredXkm.nc` is available in folder `RTOPO_FOLDER`.  
+    For a list of all options see `./FillLakes_publication.py -h`
