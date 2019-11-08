@@ -17,4 +17,4 @@ NY=$(echo "scale=0; $COUNTER / 5"|bc -l)
 FILTER=${Filters[$NF]}
 YEAR=${Years[$NY]}
 
-srun ./FillLakes_Evan.py -y $YEAR -f $FILTER -dz 0.2
+srun ./FillLakes_publication.py -y $YEAR -f $FILTER -dz 0.2
